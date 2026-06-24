@@ -27,21 +27,26 @@ export class AuthService {
       throw new BadRequestException('Email already in use');
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(dto.password, salt);
+    try {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(dto.password, salt);
 
-    const user = await this.usersService.create({
-      name: dto.name,
-      email: dto.email,
-      passwordHash,
-      university: dto.university,
-      faculty: dto.faculty,
-    });
+      const user = await this.usersService.create({
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+        university: dto.university,
+        faculty: dto.faculty,
+      });
 
-    // Mock sending email
-    console.log(`[Mock] Verification email sent to ${user.email}`);
+      // Mock sending email
+      console.log(`[Mock] Verification email sent to ${user.email}`);
 
-    return { message: 'Registration successful. Please verify your email.' };
+      return { message: 'Registration successful. Please verify your email.' };
+    } catch (error: any) {
+      // Expose the internal error for debugging
+      throw new BadRequestException(`Internal Error: ${error.message}`);
+    }
   }
 
   async login(dto: LoginDto) {
