@@ -62,7 +62,7 @@ export default function ChatScreen() {
       .then(res => {
         setConversation(res.data.conversation);
         const uniqueMessages = Array.from(new Map(res.data.messages.map((m: any) => [m.id, m])).values());
-        setMessages(uniqueMessages.reverse());
+        setMessages(uniqueMessages);
         markRead(id);
         useMessageStore.getState().fetchUnreadCount();
       })
