@@ -54,6 +54,11 @@ export default function CreateRidePage() {
         return;
       }
       
+      if (!formData.date || !formData.time) {
+        alert("Vui lòng chọn ngày đi và giờ xuất phát!");
+        return;
+      }
+      
       // Fetch route estimation when advancing to step 2
       try {
         setIsEstimating(true);
