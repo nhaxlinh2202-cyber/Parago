@@ -20,14 +20,14 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    this.validateEmailDomain(dto.email);
-
-    const existingUser = await this.usersService.findByEmail(dto.email);
-    if (existingUser) {
-      throw new BadRequestException('Email already in use');
-    }
-
     try {
+      this.validateEmailDomain(dto.email);
+
+      const existingUser = await this.usersService.findByEmail(dto.email);
+      if (existingUser) {
+        throw new BadRequestException('Email already in use');
+      }
+
       const salt = await bcrypt.genSalt(10);
       const passwordHash = await bcrypt.hash(dto.password, salt);
 
@@ -44,23 +44,33 @@ export class AuthService {
 
       return { message: 'Registration successful. Please verify your email.' };
     } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
       // Expose the internal error for debugging
       throw new BadRequestException(`Internal Error: ${error.message}`);
     }
   }
 
   async login(dto: LoginDto) {
-    const user = await this.usersService.findByEmail(dto.email);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    try {
+      const user = await this.usersService.findByEmail(dto.email);
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+      const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
+      if (!isMatch) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    return this.generateTokens(user.id, user.email);
+      return this.generateTokens(user.id, user.email);
+    } catch (error: any) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new BadRequestException(`Internal Error: ${error.message}`);
+    }
   }
 
   async refresh(dto: RefreshTokenDto) {
