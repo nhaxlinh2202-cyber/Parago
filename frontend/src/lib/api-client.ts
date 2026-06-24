@@ -28,7 +28,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     // If error is 500 or higher, dispatch global error event
     if (error.response?.status >= 500) {
-      if (typeof window !== 'undefined') {
+      const isChatbotRequest = error.config?.url?.includes('/chatbot');
+      if (!isChatbotRequest && typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('api-error', { detail: { status: error.response.status } }));
       }
     }
