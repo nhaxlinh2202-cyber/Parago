@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id               String       @id @default(uuid())
+  name             String
+  email            String       @unique
+  phone            String?
+  passwordHash     String
+  university       String
+  faculty          String
+  avatarUrl        String?
+  isDriver         Boolean      @default(false)
+  isPremium        Boolean      @default(false)
+  ecoPoints        Int          @default(0)
+  rating           Float        @default(5.0)
+  totalRides       Int          @default(0)
+  trustScore       Int          @default(100)
+  verified         Boolean      @default(false)
+  refreshTokenHash String?
+  systemRole       SystemRole?
+  isBanned         Boolean      @default(false)
+  banReason        String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  // Relations
+  driverRides      Ride[]       @relation("DriverRides")
+  passengerRides   RidePassenger[]
+  messages         Message[]
+  transactions     Transaction[]
+  conversations    ConversationParticipant[]
+  sosAlerts        SOSAlert[]
+  resolvedSOSAlerts SOSAlert[]  @relation("ResolvedSOSAlerts")
+  notifications    Notification[]
+  chatbotMessages  ChatbotMessage[]
+}
+
+
+
+enum SystemRole {
+  MODERATOR
+  ADMIN
+}
+
+enum Mode {
+  COMMUNITY
+  GAS_TIP
+}
+
+enum RideStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Ride {
+  id                  String       @id @default(uuid())
+  driverId            String
+  driver              User         @relation("DriverRides", fields: [driverId], references: [id])
+  pickupLocation      String
+  pickupLat           Float?
+  pickupLng           Float?
+  destinationLocation String
+  destLat             Float?
+  destLng             Float?
+  distance            Float?       // in meters or km
+  duration            Int?         // in seconds or minutes
+  departureAt         DateTime
+  seatsAvailable      Int
+  price               Decimal      @default(0) @db.Decimal(12, 2)
+  vehicleType         String
+  vehicleName         String?
+  genderPreference    String?      @default("any")
+  mode                Mode         @default(COMMUNITY)
+  status              RideStatus   @default(PENDING)
+  notes               String?      @db.Text
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  // Relations
+  passengers          RidePassenger[]
+  conversations       Conversation[]
+  sosAlerts           SOSAlert[]
+
+  @@index([driverId])
+  @@index([status, departureAt, driverId])
+}
+
+enum PassengerStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model RidePassenger {
+  id          String          @id @default(uuid())
+  rideId      String
+  ride        Ride            @relation(fields: [rideId], references: [id])
+  passengerId String
+  passenger   User            @relation(fields: [passengerId], references: [id])
+  status      PassengerStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+
+  @@unique([rideId, passengerId])
+  @@index([passengerId])
+}
+
+model Conversation {
+  id              String      @id @default(uuid())
+  rideId          String?
+  ride            Ride?       @relation(fields: [rideId], references: [id])
+  lastMessageAt   DateTime?
+  lastMessageText String?     @db.Text
+  createdAt       DateTime    @default(now())
+
+  // Relations
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  joinedAt       DateTime     @default(now())
+
+  @@id([conversationId, userId])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String?
+  sender         User?        @relation(fields: [senderId], references: [id])
+  text           String?
+  imageUrl       String?
+  type           String       @default("text")
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+}
+
+enum TransactionType {
+  PREMIUM_SUB
+  RIDE_PAYMENT
+}
+
+enum TransactionStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+model Transaction {
+  id            String            @id @default(uuid())
+  userId        String
+  user          User              @relation(fields: [userId], references: [id])
+  amount        Decimal           @db.Decimal(12, 2)
+  type          TransactionType
+  status        TransactionStatus @default(PENDING)
+  paymentMethod String
+  createdAt     DateTime          @default(now())
+}
+
+enum SOSAlertStatus {
+  ACTIVE
+  RESOLVED
+  FALSE_ALARM
+}
+
+model SOSAlert {
+  id                String         @id @default(uuid())
+  rideId            String
+  ride              Ride           @relation(fields: [rideId], references: [id])
+  triggeredByUserId String
+  triggeredByUser   User           @relation(fields: [triggeredByUserId], references: [id])
+  lat               Float
+  lng               Float
+  status            SOSAlertStatus @default(ACTIVE)
+  createdAt         DateTime       @default(now())
+  resolvedAt        DateTime?
+  resolvedByAdminId String?
+  resolvedByAdmin   User?          @relation("ResolvedSOSAlerts", fields: [resolvedByAdminId], references: [id])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
+model SuggestedPickupPoint {
+  id        String   @id @default(uuid())
+  lat       Float
+  lng       Float
+  address   String
+  rideIds   String[]
+  createdAt DateTime @default(now())
+}
+
+enum ChatRole {
+  user
+  assistant
+}
+
+model ChatbotMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  role      ChatRole
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+enum NotificationType {
+  RIDE_ACCEPTED
+  RIDE_REJECTED
+  NEW_JOIN_REQUEST
+  RIDE_CANCELLED
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead])
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Test - Messages</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+        .form-group { margin-bottom: 10px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; margin-right: 10px; cursor: pointer; }
+        #logs { background: #f4f4f4; padding: 10px; height: 400px; overflow-y: auto; border: 1px solid #ddd; margin-top: 20px; font-family: monospace; }
+        .log-entry { margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .log-error { color: red; }
+        .log-success { color: green; }
+        .log-message { color: blue; }
+    </style>
+</head>
+<body>
+
+    <h2>Test Messages WebSocket</h2>
+
+    <div class="form-group">
+        <label>JWT Token:</label>
+        <input type="text" id="jwtToken" placeholder="Paste your Bearer token here...">
+    </div>
+
+    <div class="form-group">
+        <label>Conversation ID:</label>
+        <input type="text" id="conversationId" placeholder="Paste conversation UUID here...">
+    </div>
+
+    <div class="form-group" style="margin-top: 15px;">
+        <button onclick="connectWS()" id="btnConnect">Connect</button>
+        <button onclick="disconnectWS()" id="btnDisconnect" disabled>Disconnect</button>
+        <button onclick="joinRoom()" id="btnJoin" disabled>Join Room</button>
+        <button onclick="sendTestMessage()" id="btnSend" disabled>Send Test Message</button>
+    </div>
+
+    <div id="logs"></div>
+
+    <script>
+        let socket;
+        const logsDiv = document.getElementById('logs');
+        const btnConnect = document.getElementById('btnConnect');
+        const btnDisconnect = document.getElementById('btnDisconnect');
+        const btnSend = document.getElementById('btnSend');
+
+        function appendLog(text, type = 'info') {
+            const el = document.createElement('div');
+            el.className = `log-entry log-${type}`;
+            el.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
+            logsDiv.appendChild(el);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+        }
+
+        function connectWS() {
+            const token = document.getElementById('jwtToken').value.trim();
+            if (!token) {
+                alert('Vui lòng nhập JWT Token');
+                return;
+            }
+
+            appendLog('Đang kết nối...', 'info');
+
+            // Khởi tạo socket kết nối tới namespace /messages
+            socket = io('http://localhost:3002/messages', {
+                auth: { token: token },
+                transports: ['websocket']
+            });
+
+            socket.on('connect', () => {
+                appendLog('Đã kết nối thành công! Socket ID: ' + socket.id, 'success');
+                btnConnect.disabled = true;
+                btnDisconnect.disabled = false;
+                btnJoin.disabled = false;
+                btnSend.disabled = false;
+            });
+
+            socket.on('disconnect', () => {
+                appendLog('Đã ngắt kết nối!', 'error');
+                btnConnect.disabled = false;
+                btnDisconnect.disabled = true;
+                btnJoin.disabled = true;
+                btnSend.disabled = true;
+            });
+
+            // Lắng nghe tin nhắn mới
+            socket.on('newMessage', (msg) => {
+                appendLog('📥 BẮT ĐƯỢC TIN NHẮN MỚI: \n' + JSON.stringify(msg, null, 2), 'message');
+            });
+
+            // Lắng nghe tự động join room khi kết nối
+            socket.on('joinedRooms', (rooms) => {
+                appendLog('✅ TỰ ĐỘNG JOIN ROOMS THÀNH CÔNG:\n' + rooms.join('\n'), 'success');
+            });
+
+            // Lắng nghe join room thủ công thành công
+            socket.on('roomJoined', (data) => {
+                appendLog('✅ ĐÃ JOIN ROOM: conversation_' + data.conversationId, 'success');
+            });
+
+            // Lắng nghe người khác đã đọc
+            socket.on('messagesRead', (data) => {
+                appendLog('👀 ĐÃ ĐỌC: ' + JSON.stringify(data), 'success');
+            });
+
+            // Lắng nghe lỗi (từ Rate Limiter hoặc Catch)
+            socket.on('error', (err) => {
+                appendLog('❌ LỖI TỪ SERVER: ' + JSON.stringify(err), 'error');
+            });
+        }
+
+        function joinRoom() {
+            const conversationId = document.getElementById('conversationId').value.trim();
+            if (!conversationId) {
+                alert('Vui lòng nhập Conversation ID');
+                return;
+            }
+            if (socket && socket.connected) {
+                socket.emit('joinRoom', { conversationId });
+                appendLog(`Đã gửi yêu cầu join room: conversation_${conversationId}`, 'info');
+            }
+        }
+
+        function disconnectWS() {
+            if (socket) {
+                socket.disconnect();
+            }
+        }
+
+        function sendTestMessage() {
+            if (!socket || !socket.connected) return;
+            const conversationId = document.getElementById('conversationId').value.trim();
+            
+            if (!conversationId) {
+                alert('Vui lòng nhập Conversation ID để gửi tin');
+                return;
+            }
+
+            const payload = {
+                conversationId: conversationId,
+                content: "test message từ browser " + Math.floor(Math.random() * 1000),
+                type: "text"
+            };
+
+            appendLog('📤 ĐANG GỬI TIN NHẮN: ' + payload.content, 'info');
+            socket.emit('sendMessage', payload);
+        }
+    </script>
+</body>
+</html>

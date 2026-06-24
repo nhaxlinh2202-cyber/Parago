@@ -1,0 +1,41 @@
+{
+  "name": "Parago",
+  "short_name": "Parago",
+  "description": "Nền tảng đi chung xe cho sinh viên đại học",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#D32F2F",
+  "orientation": "portrait-primary",
+  "categories": ["transportation", "social"],
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/logo/logo-parago-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo/logo-parago-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Tìm chuyến đi",
+      "short_name": "Tìm xe",
+      "url": "/rides",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Tạo chuyến đi",
+      "short_name": "Tạo",
+      "url": "/rides/create",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ]
+}
