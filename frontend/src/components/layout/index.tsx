@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   IconHome,
@@ -109,6 +109,11 @@ export function AppHeader({
   onBack,
 }: AppHeaderProps) {
   const { resolvedTheme, setTheme } = useTheme();
+  const router = useRouter();
+
+  const handleBack = onBack || (() => {
+    router.back();
+  });
 
   return (
     <header
@@ -122,7 +127,7 @@ export function AppHeader({
         <div className="flex items-center gap-3">
           {showBack && (
             <button
-              onClick={onBack}
+              onClick={handleBack}
               className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-surface-100 dark:hover:bg-surface-200 transition-colors"
             >
               <IconChevronLeft size={20} />
