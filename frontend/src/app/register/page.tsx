@@ -121,7 +121,7 @@ export default function RegisterPage() {
               required
             />
             <p className="text-xs text-[var(--text-muted)] -mt-2">
-              Chỉ chấp nhận email đuôi .edu.vn (vd: hust.edu.vn, vnu.edu.vn)
+              Chỉ chấp nhận email đuôi .edu.vn (vd: hust.edu.vn, ftu.edu.vn, huce.edu.vn)
             </p>
             
             <Input

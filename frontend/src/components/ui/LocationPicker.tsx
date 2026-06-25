@@ -32,15 +32,11 @@ export const PRESET_LOCATIONS = [
   // Ký túc xá
   { id: 'ktx_hust', name: 'KTX Bách Khoa', type: 'dorm', icon: '🏠', lat: 21.0040, lng: 105.8465, address: 'Ký túc xá Đại học Bách khoa Hà Nội, Tạ Quang Bửu, Hai Bà Trưng, Hà Nội' },
   { id: 'ktx_metri', name: 'KTX Mễ Trì', type: 'dorm', icon: '🏠', lat: 21.0000, lng: 105.7950, address: 'Ký túc xá Mễ Trì, Lương Thế Vinh, Thanh Xuân, Hà Nội' },
-  // Giao thông
-  { id: 'noibai', name: 'Sân bay Nội Bài', type: 'airport', icon: '✈️', lat: 21.2169534, lng: 105.7937453, address: 'Sân bay Quốc tế Nội Bài, Phú Minh, Sóc Sơn, Hà Nội' },
-  { id: 'mydinh_bus', name: 'Bến xe Mỹ Đình', type: 'bus', icon: '🚌', lat: 21.0284045, lng: 105.7783143, address: 'Bến xe Mỹ Đình, 20 Phạm Hùng, Nam Từ Liêm, Hà Nội' },
-  { id: 'giapbat', name: 'Bến xe Giáp Bát', type: 'bus', icon: '🚌', lat: 20.9802349, lng: 105.8420007, address: 'Bến xe Giáp Bát, Giải Phóng, Hoàng Mai, Hà Nội' },
   // Nổi tiếng
   { id: 'mydinh_stadium', name: 'Sân vận động Mỹ Đình', type: 'landmark', icon: '🏟️', lat: 21.0205027, lng: 105.7639271, address: 'Sân vận động Quốc gia Mỹ Đình, Lê Đức Thọ, Nam Từ Liêm, Hà Nội' },
 ];
 
-const QUICK_PICK_IDS = ['hust', 'neu', 'vnu', 'mydinh_bus', 'noibai'];
+const QUICK_PICK_IDS = ['hust', 'neu', 'vnu', 'ftu', 'xaydung'];
 
 interface LocationPickerProps {
   label?: string;
