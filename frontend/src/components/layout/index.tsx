@@ -238,12 +238,6 @@ export function AppLayout({ children, hideBottomNav = false }: { children: React
       {!hideBottomNav && (
         <>
           <BottomNav />
-          {/* Mobile FAB */}
-          <div className="fixed right-4 bottom-20 z-30 md:hidden">
-            <Link href="/rides/create">
-              <FAB icon={<IconPlus size={24} />} size="lg" />
-            </Link>
-          </div>
           <ChatbotWidget />
         </>
       )}
