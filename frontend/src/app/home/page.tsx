@@ -169,6 +169,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [rides, setRides] = useState<any[]>([]);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [filter, setFilter] = useState("Tất cả");
   const user = useAuthStore((state) => state.user);
 
   useEffect(() => {
@@ -206,12 +207,21 @@ export default function HomePage() {
     fetchRides();
   }, []);
 
-  const sortedRides = [...rides].sort((a, b) => {
-    if (sortOrder === "newest") {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    }
-    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-  });
+  const sortedRides = [...rides]
+    .filter((r) => {
+      if (filter === "Tất cả") return true;
+      if (filter === "Miễn phí") return r.mode === "community";
+      if (filter === "Ô tô") return r.vehicleType === "car";
+      if (filter === "Xe máy") return r.vehicleType !== "car";
+      if (filter === "Cùng trường") return user && r.driver?.university === user.university;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "newest") {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
 
   return (
     <AppLayout>
@@ -277,17 +287,18 @@ export default function HomePage() {
 
         {/* FILTER CHIPS */}
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pt-2">
-          {["Tất cả", "Cùng trường", "Miễn phí", "Ô tô", "Xe máy"].map((filter, i) => (
+          {["Tất cả", "Cùng trường", "Miễn phí", "Ô tô", "Xe máy"].map((f, i) => (
             <button
-              key={filter}
+              key={f}
+              onClick={() => setFilter(f)}
               className={cn(
                 "shrink-0 px-4 py-2 rounded-full text-xs font-medium transition-all duration-200",
-                i === 0
+                filter === f
                   ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
                   : "bg-surface-100 text-text-secondary hover:bg-surface-200 dark:bg-surface-200 dark:hover:bg-surface-300"
               )}
             >
-              {filter}
+              {f}
             </button>
           ))}
         </div>
