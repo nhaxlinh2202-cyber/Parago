@@ -122,6 +122,12 @@ export default function CreateRidePage() {
     if (step > 1) {
       setDirection(-1);
       setStep(step - 1);
+    } else {
+      if (typeof window !== 'undefined' && window.history.length > 2) {
+        router.back();
+      } else {
+        router.push('/home');
+      }
     }
   };
 
