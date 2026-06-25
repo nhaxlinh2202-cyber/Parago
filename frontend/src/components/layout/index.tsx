@@ -112,7 +112,11 @@ export function AppHeader({
   const router = useRouter();
 
   const handleBack = onBack || (() => {
-    router.back();
+    if (typeof window !== 'undefined' && window.history.length > 2) {
+      router.back();
+    } else {
+      router.push('/home');
+    }
   });
 
   return (
