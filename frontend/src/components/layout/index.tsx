@@ -209,16 +209,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Create ride button */}
-      <div className="p-4 border-t border-[var(--border-default)]">
-        <Link
-          href="/rides/create"
-          className="flex items-center justify-center gap-2 h-11 w-full rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-semibold text-sm transition-all btn-press"
-        >
-          <IconPlus size={18} />
-          Tạo chuyến đi
-        </Link>
-      </div>
+
     </aside>
   );
 }
