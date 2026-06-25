@@ -117,7 +117,13 @@ export default function ChatScreen() {
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => router.back()}
+              onClick={() => {
+                if (typeof window !== 'undefined' && window.history.length > 2) {
+                  router.back();
+                } else {
+                  router.push('/messages');
+                }
+              }}
               className="w-10 h-10 -ml-2 rounded-xl flex items-center justify-center hover:bg-surface-100 transition-colors"
             >
               <IconChevronLeft size={24} />
